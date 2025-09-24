@@ -1,0 +1,5 @@
+.azfuncvenv
+.python-version
+__pycache__/
+*.pyc
+.vscode/

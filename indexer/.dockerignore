@@ -1,0 +1,7 @@
+.gitignore
+.funcignore
+.python-version
+local.settings.json
+.vscode/
+__pycache__/
+*.pyc

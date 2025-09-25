@@ -1,7 +1,7 @@
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from openai import AzureOpenAI
-from core.config import Settings
+from src.core.config import Settings
 from typing import List, Dict, Any
 
 class AzureEmbeddingClient:

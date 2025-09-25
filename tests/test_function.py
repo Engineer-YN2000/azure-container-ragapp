@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 import azure.functions as func
 import logging
 
-from function_app import indexer
+from src.indexer.function_app import indexer
 
 logging.basicConfig(
     filename="test_function.log",
@@ -14,10 +14,10 @@ logging.basicConfig(
 
 
 class TestIndexerFunction(unittest.TestCase):
-    @patch("function_app.Settings")
-    @patch("function_app.AzureSearchClient")
-    @patch("function_app.extract_text_from_file")
-    @patch("function_app.chunk_text")
+    @patch("src.indexer.function_app.Settings")
+    @patch("src.indexer.function_app.AzureSearchClient")
+    @patch("src.indexer.function_app.extract_text_from_file")
+    @patch("src.indexer.function_app.chunk_text")
     def test_indexer_happy_path(
         self,
         mock_chunk: MagicMock,

@@ -3,9 +3,9 @@ import logging
 import tempfile
 import os
 
-from src.clients import AzureSearchClient
-from src.func import chunk_text, extract_text_from_file
-from src.core.config import Settings
+from .clients import AzureSearchClient
+from .func import chunk_text, extract_text_from_file
+from .core.config import Settings
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 

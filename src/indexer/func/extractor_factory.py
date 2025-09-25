@@ -5,6 +5,7 @@ EXTRACTOR_MAP = {
     ".pdf": PdfExtractor(),
 }
 
+
 def extract_text_from_file(filepath: str) -> str:
     """Extract text from a file based on its extension."""
     ext = Path(filepath).suffix.lower()

@@ -5,13 +5,13 @@ FROM mcr.microsoft.com/azure-functions/python:4-python3.11
 WORKDIR /home/site/wwwroot
 
 # 依存関係ファイルをコピー
-COPY requirements.txt ./
+COPY src/indexer/requirements.txt ./
 
 # 依存関係をインストール
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
 # アプリケーションの全ファイルをコピー
-COPY . .
+COPY src/indexer .
 
 # Azure Functions の起動コマンドはベースイメージで定義済み

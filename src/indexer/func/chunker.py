@@ -1,4 +1,8 @@
+import logging
+
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+logger = logging.getLogger(__name__)
 
 
 class DocChunker:
@@ -15,4 +19,5 @@ class DocChunker:
 
     def chunk_text(self, text: str) -> list[str]:
         """Chunk the provided text and return a list of chunks."""
+        logger.info(f"Chunking text (first 30 chars): '{text[:30]}...'")
         return self.chunker.split_text(text)

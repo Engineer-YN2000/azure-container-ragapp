@@ -1,35 +1,55 @@
-import azure.functions as func
 import logging
 import tempfile
 import os
 
-from .clients import AzureSearchClient
+import azure.functions as func
+
+from .clients import AzureSearchClient, AzureEmbeddingClient
 from .func import chunk_text, extract_text_from_file
 from .core.config import Settings
+
+logger = logging.getLogger(__name__)
+
+if os.environ.get("ENVIRONMENT") == "test":
+    search_client = None
+    logger.info("Running in TEST environment. Dependencies will be mocked.")
+else:
+    try:
+        settings = Settings()
+        embedding_client = AzureEmbeddingClient(settings)
+        search_client = AzureSearchClient(settings, embedding_client)
+        logger.info("Clients initialized successfully.")
+    except Exception as e:
+        logger.critical(f"Fatal error during client initialization: {e}", exc_info=True)
+        search_client = None
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 
 @app.route(route="indexer")
 def indexer(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Python HTTP trigger function processed a request.")
+    logger.info("Python HTTP trigger function processed a request.")
+
+    if not search_client:
+        logger.error("Search client is not initialized due to a startup error.")
+        return func.HttpResponse(
+            "Internal Server Error: Service is not available.", status_code=500
+        )
 
     try:
-        settings = Settings()
-
         # 1. Get file from request
         file = req.files.get("file")
         if not file:
             return func.HttpResponse("Please provide a file to index.", status_code=400)
 
-        file_bytes = file.read()
+        file_bytes: bytes = file.read()
         file_name = file.filename
         if not file_name:
             return func.HttpResponse(
                 "File name could not be determined.", status_code=400
             )
 
-        logging.info(f"Received file: {file_name}. Creating temporary file.")
+        logger.info(f"Received file: {file_name}. Creating temporary file.")
 
         # 2. Extract text from file
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -38,37 +58,35 @@ def indexer(req: func.HttpRequest) -> func.HttpResponse:
             with open(temp_file_path, "wb") as f:
                 f.write(file_bytes)
 
-            logging.info(
-                f"Temporary file created at {temp_file_path}. Extracting text."
-            )
+            logger.info(f"Temporary file created at {temp_file_path}. Extracting text.")
 
             text = extract_text_from_file(temp_file_path)
 
         if not text:
-            logging.warning(f"No text could be extracted from {file_name}.")
+            logger.warning(f"No text could be extracted from {file_name}.")
             return func.HttpResponse(
                 f"Could not extract text from '{file_name}'. This may be an unsupported file format or the file may be empty.",
                 status_code=400,
             )
 
         # 3. Chunk text
-        logging.info(f"Extracted text from {file_name}. Chunking text.")
+        logger.info(f"Extracted text from {file_name}. Chunking text.")
         chunks = chunk_text(text)
 
         # 4. Index chunks to Azure Search
-        logging.info(
+        logger.info(
             f"Chunking complete. Indexing {len(chunks)} chunks to Azure Search."
         )
-        search_client = AzureSearchClient(settings)
+
         search_client.index_chunks(chunks)
 
         success_message = (
             f"Finished all processes for {file_name} and indexed {len(chunks)} chunks ."
         )
-        logging.info(success_message)
+        logger.info(success_message)
 
         return func.HttpResponse(success_message, status_code=200)
 
     except Exception as e:
-        logging.error(f"An unexpected error occurred: {e}", exc_info=True)
+        logger.error(f"An unexpected error occurred: {e}", exc_info=True)
         return func.HttpResponse("An unexpected error occurred.", status_code=500)

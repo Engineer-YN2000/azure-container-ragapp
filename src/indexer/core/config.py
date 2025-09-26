@@ -1,6 +1,8 @@
 import os
-import sys
 import httpx
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Settings:
@@ -21,8 +23,8 @@ class Settings:
             self.aoai_api_key = os.environ["AOAI_API_KEY"]
             self.aoai_embedding_model_name = os.environ["AOAI_EMBEDDING_MODEL_NAME"]
         except KeyError as e:
-            print(f"Fatal Error: Missing environment variable {e}")
-            sys.exit(1)
+            logger.critical(f"Missing environment variable {e}", exc_info=True)
+            raise e
 
         self.global_http_client = httpx.Client()
         self.async_http_client = httpx.AsyncClient()

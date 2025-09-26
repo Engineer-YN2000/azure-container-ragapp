@@ -6,6 +6,7 @@ chunk_text = _default_chunker.chunk_text
 
 
 __all__ = [
+    "DocChunker",
     "chunk_text",
     "extract_text_from_file",
 ]

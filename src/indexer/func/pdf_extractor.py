@@ -1,4 +1,8 @@
+import logging
+
 import fitz  # type: ignore
+
+logger = logging.getLogger(__name__)
 
 
 class PdfExtractor:
@@ -15,5 +19,5 @@ class PdfExtractor:
             return all_text  # type: ignore
 
         except Exception as e:
-            print(f"Error extracting text from {filepath}: {e}")
+            logger.error(f"Error extracting text from {filepath}: {e}")
             return ""

@@ -1,8 +1,13 @@
+from typing import List, Dict, Any
+import logging
+
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from openai import AzureOpenAI
+
 from ..core.config import Settings
-from typing import List, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 
 class AzureEmbeddingClient:
@@ -17,19 +22,21 @@ class AzureEmbeddingClient:
 
     def get_embedding(self, text: str) -> list[float]:
         """Get embedding vector for the given text."""
+        logger.info(f"Requesting embedding for text (first 30 chars): '{text[:30]}...'")
         response = self.client.embeddings.create(input=text, model=self.embedding_model)
+        logger.debug("Embedding received successfully.")
         return response.data[0].embedding
 
 
 class AzureSearchClient:
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, embedding_client: AzureEmbeddingClient):
         self.client = SearchClient(
             endpoint=settings.search_service_endpoint,
             index_name=settings.search_service_index_name,
             credential=AzureKeyCredential(settings.search_service_api_key),
             http_client=settings.global_http_client,
         )
-        self.embedding_client = AzureEmbeddingClient(settings)
+        self.embedding_client = embedding_client
 
     def index_chunks(self, chunks: list[str]):
         """Index a list of text chunks into Azure AI Search."""
@@ -44,4 +51,6 @@ class AzureSearchClient:
             }
             documents.append(document)
 
+        logger.info(f"Uploading {len(documents)} documents to Azure AI Search.")
         self.client.upload_documents(documents)  # type: ignore
+        logger.info("Successfully uploded documents.")

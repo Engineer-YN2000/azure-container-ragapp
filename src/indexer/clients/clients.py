@@ -54,3 +54,31 @@ class AzureSearchClient:
         logger.info(f"Uploading {len(documents)} documents to Azure AI Search.")
         self.client.upload_documents(documents)  # type: ignore
         logger.info("Successfully uploded documents.")
+
+        try:
+            results = self.client.upload_documents(documents)  # type: ignore
+
+            # Check results for any failures
+            successful_uploads = 0
+            for result in results:
+                if result.succeeded:
+                    successful_uploads += 1
+                else:
+                    # Log detailed error information
+                    logger.error(
+                        f"Failed to index document with key {result.key}. "
+                        f"Error: {result.error_message}, Status Code: {result.status_code}"
+                    )
+
+            if successful_uploads == len(documents):
+                logger.info("Successfully uploaded all documents.")
+            else:
+                logger.warning(
+                    f"Successfully uploaded {successful_uploads} out of {len(documents)} documents."
+                )
+
+        except Exception as e:
+            logger.error(
+                f"An error occurred during document upload: {e}", exc_info=True
+            )
+            raise

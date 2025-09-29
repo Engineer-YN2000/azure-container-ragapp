@@ -1,3 +1,4 @@
+# Streamlit app for uploading and indexing documents via a backend API
 import os
 
 import streamlit as st

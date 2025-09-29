@@ -56,16 +56,15 @@ class AzureSearchClient:
         logger.info("Successfully uploded documents.")
 
         try:
-            # upload_documentsは結果のリストを返す
             results = self.client.upload_documents(documents)  # type: ignore
 
-            # 各ドキュメントの結果をチェック
+            # Check results for any failures
             successful_uploads = 0
             for result in results:
                 if result.succeeded:
                     successful_uploads += 1
                 else:
-                    # 失敗したドキュメントのキーとエラーをログに出力
+                    # Log detailed error information
                     logger.error(
                         f"Failed to index document with key {result.key}. "
                         f"Error: {result.error_message}, Status Code: {result.status_code}"

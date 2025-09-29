@@ -5,7 +5,7 @@ from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from openai import AzureOpenAI
 
-from ..core.config import Settings
+from core.config import Settings
 
 logger = logging.getLogger(__name__)
 

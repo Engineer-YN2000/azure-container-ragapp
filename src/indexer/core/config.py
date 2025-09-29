@@ -22,6 +22,7 @@ class Settings:
             self.aoai_api_version = os.environ["AOAI_API_VERSION"]
             self.aoai_api_key = os.environ["AOAI_API_KEY"]
             self.aoai_embedding_model_name = os.environ["AOAI_EMBEDDING_MODEL_NAME"]
+            self.PERFORM_INDEXING = os.environ.get("PERFORM_INDEXING", "true")
         except KeyError as e:
             logger.critical(f"Missing environment variable {e}", exc_info=True)
             raise e

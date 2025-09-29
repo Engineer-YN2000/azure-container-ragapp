@@ -4,9 +4,10 @@ import os
 
 import azure.functions as func
 
-from .clients import AzureSearchClient, AzureEmbeddingClient
-from .func import chunk_text, extract_text_from_file
-from .core.config import Settings
+from clients import AzureSearchClient, AzureEmbeddingClient
+from func import chunk_text, extract_text_from_file
+from core.config import Settings
+from utilities.utils import save_chunks_to_file
 
 logger = logging.getLogger(__name__)
 
@@ -73,17 +74,21 @@ def indexer(req: func.HttpRequest) -> func.HttpResponse:
         logger.info(f"Extracted text from {file_name}. Chunking text.")
         chunks = chunk_text(text)
 
+        save_chunks_to_file(chunks, file_name)
+
         # 4. Index chunks to Azure Search
-        logger.info(
-            f"Chunking complete. Indexing {len(chunks)} chunks to Azure Search."
-        )
+        if settings.PERFORM_INDEXING.lower() != "false":
+            logger.info(
+                f"Chunking complete. Indexing {len(chunks)} chunks to Azure Search."
+            )
 
-        search_client.index_chunks(chunks)
+            search_client.index_chunks(chunks)
 
-        success_message = (
-            f"Finished all processes for {file_name} and indexed {len(chunks)} chunks ."
-        )
-        logger.info(success_message)
+            success_message = f"Finished all processes for {file_name} and indexed {len(chunks)} chunks ."
+            logger.info(success_message)
+        else:
+            success_message = f"DRY RUN: Finished all processes for {file_name}. Indexing was skipped."
+            logger.info(success_message)
 
         return func.HttpResponse(success_message, status_code=200)
 

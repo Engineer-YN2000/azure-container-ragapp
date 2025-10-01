@@ -12,6 +12,6 @@ RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
 # アプリケーションの全ファイルをコピー
-COPY src/indexer .
+COPY src/indexer ./
 
 # Azure Functions の起動コマンドはベースイメージで定義済み
